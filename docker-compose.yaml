@@ -1,0 +1,31 @@
+version: "3.4"
+
+services:
+  nginx:
+    image: nginxinc/nginx-unprivileged:1.25.4
+    environment:
+      - NGINX_APP_HOST=next
+      - NGINX_APP_PORT=3000
+    volumes:
+      - ./.docker/nginx/nginx-reverse-proxy.conf:/etc/nginx/templates/default.conf.template
+      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 8080:8080
+    networks:
+      - otelnet
+    depends_on:
+      - next
+
+  next:
+    build:
+      dockerfile: ./.docker/app/Dockerfile.app
+      context: .
+    volumes:
+      - ./docker-next-cache:/app/.next/cache
+    ports:
+      - 3000:3000
+    networks:
+      - otelnet
+
+networks:
+  otelnet:
