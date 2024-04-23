@@ -1,8 +1,32 @@
 version: "3.4"
 
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.50.0
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      LOG_LEVEL: debug
+    ports:
+      - 16686:16686
+    networks:
+      - otelnet
+
+  collector:
+    image: otel/opentelemetry-collector:0.98.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./.docker/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - 4318:4318
+    depends_on:
+      - jaeger
+    networks:
+      - otelnet
+
   nginx:
-    image: nginxinc/nginx-unprivileged:1.25.4
+    build:
+      dockerfile: ./.docker/nginx/Dockerfile.nginx
+      context: .
     environment:
       - NGINX_APP_HOST=next
       - NGINX_APP_PORT=3000
@@ -15,6 +39,7 @@ services:
       - otelnet
     depends_on:
       - next
+      - collector
 
   next:
     build:
@@ -22,8 +47,8 @@ services:
       context: .
     volumes:
       - ./docker-next-cache:/app/.next/cache
-    ports:
-      - 3000:3000
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318
     networks:
       - otelnet
 

@@ -22,7 +22,8 @@ $ docker compose up
 
 After a successful run following services are available:
 
-- [NextJS application](http://localhost:3000/)
+- [NextJS application](http://localhost:8080/)
+- [Jaeger UI](http://localhost:16686/)
 
 ## Restart on demand
 

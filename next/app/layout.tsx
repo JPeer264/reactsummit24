@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api';
 import '#/styles/globals.css';
 import { AddressBar } from '#/ui/address-bar';
 import Byline from '#/ui/byline';
@@ -6,6 +7,8 @@ import { Metadata, ResolvingMetadata } from 'next';
 import Script from 'next/script';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const activeSpan = trace.getActiveSpan();
+
   return {
     title: {
       default: 'Next.js App Router',
@@ -21,6 +24,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+    },
+    other: {
+      traceparent: activeSpan
+        ? `00-${activeSpan.spanContext().traceId}-${
+            activeSpan.spanContext().spanId
+          }-01`
+        : '',
     },
   } satisfies Metadata;
 }
@@ -49,6 +59,7 @@ export default function RootLayout({
             <Byline className="fixed sm:hidden" />
           </div>
         </div>
+        <Script src="/instrumentation.browser.js" />
       </body>
     </html>
   );

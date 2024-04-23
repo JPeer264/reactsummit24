@@ -2,6 +2,7 @@
 const nextConfig = {
   output: 'standalone',
   experimental: {
+    instrumentationHook: true,
     serverActions: {
       allowedOrigins: ['localhost:8080'],
     },
